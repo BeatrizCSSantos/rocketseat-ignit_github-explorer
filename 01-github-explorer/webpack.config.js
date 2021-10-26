@@ -1,5 +1,6 @@
 const path = require('path')
 const HTMLWebpackPlugin = require('html-webpack-plugin')
+const ReactRefreshWebPackPlugin = require('@pmmmwh/react-refresh-webpack-plugin')
 
 const isDevelopment = process.env.NODE.ENV !== 'production';
 
@@ -16,18 +17,27 @@ module.exports = {
     },
     devServer: {
         static: path.resolve(__dirname, 'public'), // Funciona para versão 4.0.0
+        hot: true,
     },
     plugins: [
+        isDevelopment && new ReactRefreshWebPackPlugin(),
         new HTMLWebpackPlugin({
             template: path.resolve(__dirname, 'public', 'index.html')
         })
-    ],
+    ].filter(Boolean),
     module: {
         rules: [
             {// test vai retornar se é js ou nao então verfica se ele termina em .jsx (\) escape, verifica se tem o .
                 test: /\.jsx$/,
                 exclude: /node_modules/,
-                use: 'babel-loader', // vai converter o arquivo para uma maneira que o browser entenda
+                use: {
+                    loader: 'babel-loader',
+                    options: {
+                        plugins: [
+                            isDevelopment && require.resolve('react-refresh/babel')
+                        ].filter(Boolean)
+                    }
+                }, // vai converter o arquivo para uma maneira que o browser entenda
             },
             {// test vai retornar se é js ou nao então verfica se ele termina em .jsx (\) escape, verifica se tem o .
                 test: /\.scss$/,
